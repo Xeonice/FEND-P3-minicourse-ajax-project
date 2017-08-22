@@ -47,8 +47,30 @@ function loadData() {
         $nytHeaderElem.text("New York time could not be loaded");
     });
 
+    //wiki API调用
+    //wiki API只接受JSONP类型数据
+    //JSONP未内置错误处理流程
+    //因此用setTimeout处理
+    var wikiRequestTimeOut = setTimeout(function (e) {
+        $wikiElem.text("failed to load wiki.")
+    }, 8000);                                                                              //setTimeout = 处理函数 + 等待时间
+    var wikiUrl = 'https://en.wikipedia.org/w/api.php?action=opensearch&search=' + cityStr + '&format=json&callback=wikiCallback';
+    $.ajax({                                                                               //ajax函数，由url与Setting组成
+        url: wikiUrl,                                                                      //设定url，可提至大括号外
+        dataType: "jsonp",                                                                 //设定传输类型为JSONP
 
+        success: function(response){
+            var articleList = response[1];                                                 //articleList为从response项中取出
 
+            for(var i = 0; i < articleList.length; i++){
+                articleStr = articleList[i];
+                var url = "http://en.wikipedia.org/wiki/" + articleStr;
+                $wikiElem.append('<li><a href="' + url + '">' +
+                    articleStr + '</a></li>');
+            };
+            clearTimeout(wikiRequestTimeOut);                                              //成功加载时，消去timeout信息，否则8s后timeout会自动显示
+        }
+    });
     return false;
 };
 
